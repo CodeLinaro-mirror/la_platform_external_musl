@@ -71,10 +71,6 @@ int __getgr_a(const char *name, gid_t gid, struct group *gr, char **buf, size_t 
 			goto cleanup_f;
 		}
 
-		if (groupbuf[GRMEMCNT] > (size_t)(INT32_MAX-1)) {
-			rv = ENOMEM;
-			goto cleanup_f;
-		}
 		if (groupbuf[GRNAMELEN] > SIZE_MAX - groupbuf[GRPASSWDLEN]) {
 			rv = ENOMEM;
 			goto cleanup_f;
@@ -131,13 +127,7 @@ int __getgr_a(const char *name, gid_t gid, struct group *gr, char **buf, size_t 
 		if (groupbuf[GRMEMCNT]) {
 			mem[0][0] = *buf + groupbuf[GRNAMELEN] + groupbuf[GRPASSWDLEN];
 			for (ptr = mem[0][0], i = 0; ptr != mem[0][0]+grlist_len; ptr++)
-				if (!*ptr)
-					if (i<groupbuf[GRMEMCNT]) {
-						mem[0][++i] = ptr+1;
-					} else {
-						rv = EIO;
-						goto cleanup_f;
-					}
+				if (!*ptr) mem[0][++i] = ptr+1;
 			mem[0][i] = 0;
 
 			if (i != groupbuf[GRMEMCNT]) {

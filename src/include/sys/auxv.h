@@ -5,6 +5,6 @@
 
 #include <features.h>
 
-unsigned long __getauxval(unsigned long);
+hidden unsigned long __getauxval(unsigned long);
 
 #endif

@@ -178,16 +178,10 @@ static char *fmt_u(uintmax_t x, char *s)
 typedef char compiler_defines_long_double_incorrectly[9-(int)sizeof(long double)];
 #endif
 
-static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t, int ps)
+static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 {
-	int max_mant_dig = (ps==BIGLPRE) ? LDBL_MANT_DIG : DBL_MANT_DIG;
-	int max_exp = (ps==BIGLPRE) ? LDBL_MAX_EXP : DBL_MAX_EXP;
-	/* One slot for 29 bits left of radix point, a slot for every 29-21=8
-	 * bits right of the radix point, and one final zero slot. */
-	int max_mant_slots = 1 + (max_mant_dig-29+7)/8 + 1;
-	int max_exp_slots = (max_exp+max_mant_dig+28+8)/9;
-	int bufsize = max_mant_slots + max_exp_slots;
-	uint32_t big[bufsize];
+	uint32_t big[(LDBL_MANT_DIG+28)/29 + 1          // mantissa expansion
+		+ (LDBL_MAX_EXP+LDBL_MANT_DIG+28+8)/9]; // exponent expansion
 	uint32_t *a, *d, *r, *z;
 	int e2=0, e, i, j, l;
 	char buf[9+LDBL_MANT_DIG/4], *s;
@@ -268,7 +262,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t, int ps)
 	if (y) y *= 0x1p28, e2-=28;
 
 	if (e2<0) a=r=z=big;
-	else a=r=z=big+sizeof(big)/sizeof(*big) - max_mant_slots - 1;
+	else a=r=z=big+sizeof(big)/sizeof(*big) - LDBL_MANT_DIG - 1;
 
 	do {
 		*z = y;
@@ -563,11 +557,11 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		case 'x': case 'X':
 			a = fmt_x(arg.i, z, t&32);
 			if (arg.i && (fl & ALT_FORM)) prefix+=(t>>4), pl=2;
-			goto ifmt_tail;
+			if (0) {
 		case 'o':
 			a = fmt_o(arg.i, z);
 			if ((fl&ALT_FORM) && p<z-a+1) p=z-a+1;
-			goto ifmt_tail;
+			} if (0) {
 		case 'd': case 'i':
 			pl=1;
 			if (arg.i>INTMAX_MAX) {
@@ -579,7 +573,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			} else pl=0;
 		case 'u':
 			a = fmt_u(arg.i, z);
-		ifmt_tail:
+			}
 			if (xp && p<0) goto overflow;
 			if (xp) fl &= ~ZERO_PAD;
 			if (!arg.i && !p) {
@@ -624,7 +618,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		case 'e': case 'f': case 'g': case 'a':
 		case 'E': case 'F': case 'G': case 'A':
 			if (xp && p<0) goto overflow;
-			l = fmt_fp(f, arg.f, w, p, fl, t, ps);
+			l = fmt_fp(f, arg.f, w, p, fl, t);
 			if (l<0) goto overflow;
 			continue;
 		}

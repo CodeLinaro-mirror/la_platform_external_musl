@@ -28,6 +28,7 @@ void setspent(void);
 void endspent(void);
 struct spwd *getspent(void);
 struct spwd *fgetspent(FILE *);
+struct spwd *sgetspent(const char *);
 int putspent(const struct spwd *, FILE *);
 
 struct spwd *getspnam(const char *);

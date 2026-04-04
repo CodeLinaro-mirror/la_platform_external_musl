@@ -11,7 +11,7 @@ weak void _fini();
 int __libc_start_main(int (*)(), int, char **,
 	void (*)(), void(*)(), void(*)());
 
-hidden void _start_c(long *p)
+void _start_c(long *p)
 {
 	int argc = p[0];
 	char **argv = (void *)(p+1);
