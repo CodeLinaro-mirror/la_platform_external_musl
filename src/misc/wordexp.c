@@ -116,7 +116,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 		if (null == 2) fcntl(2, F_SETFD, 0);
 		else dup2(null, 2);
 		execl("/bin/sh", "sh", "-c",
-			"eval \"printf %s\\\\\\\\0 x $1\"",
+			"eval \"set --;printf %s\\\\\\\\0 x $1\"",
 			"sh", s, (char *)0);
 		_exit(1);
 	}
