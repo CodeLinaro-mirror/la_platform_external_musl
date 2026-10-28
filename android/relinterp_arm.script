@@ -1,0 +1,9 @@
+SECTIONS {
+  /* Musl includes _init and _fini symbols, which the linker implicitly
+     connects to DT_INIT and DT_FINI.  On arm and aarch64 NO_LEGACY_INITFINI
+     prevents those from being called, which can confuse Bolt.
+   */
+  /DISCARD/ : { *(.init) }
+  /DISCARD/ : { *(.fini) }
+}
+INSERT BEFORE .text;

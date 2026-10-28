@@ -58,8 +58,6 @@ typedef void EntryFunc(void);
 #include "crt_arch.h"
 
 int main();
-weak void _init();
-weak void _fini();
 int __libc_start_main(int (*)(), int, char **,
   void (*)(), void(*)(), void(*)());
 
@@ -861,7 +859,7 @@ void _start_c(long* raw_args) {
     debug("exe is already relocated, starting main executable");
     int argc = raw_args[0];
     char **argv = (void *)(raw_args+1);
-    __libc_start_main(main, argc, argv, _init, _fini, 0);
+    __libc_start_main(main, argc, argv, 0, 0, 0);
   }
 
   debug("entering relinterp");
