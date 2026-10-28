@@ -689,6 +689,27 @@ cc_library_host_static {
 }
 
 cc_genrule {
+    name: "libc_musl_relinterp.script",
+    host_supported: true,
+    device_supported: false,
+    enabled: false,
+    target: {
+        musl: {
+            enabled: true,
+        },
+    },
+    srcs: [
+        "android/relinterp.script",
+        "android/relinterp_arm.script",
+    ],
+    out: ["relinterp.script"],
+    cmd: `cat $(location android/relinterp.script) > $(out) && ` +
+        `if [[ "$${CC_ARCH}" == "arm64" || "$${CC_ARCH}" == "arm" ]]; then ` +
+        `  cat $(location android/relinterp_arm.script) >> $(out); ` +
+        `fi`,
+}
+
+cc_genrule {
     name: "libc_musl_sysroot",
     host_supported: true,
     device_supported: false,
@@ -735,7 +756,7 @@ cc_genrule {
 
         // Embedded linker objects and linker scripts
         ":libc_musl_linker_object",
-        "android/relinterp.script",
+        ":libc_musl_relinterp.script",
 
         // Wrapper scripts
         ":libc_musl_clang_wrapper",
@@ -781,7 +802,7 @@ cc_genrule {
         "  -f $(location android/include/sys/cdefs.h) " +
         // embedded linker crt objects
         " -P lib -j " +
-        "  -f $(location android/relinterp.script) " +
+        "  -f $(location :libc_musl_relinterp.script) " +
         "  -f $(location :libc_musl_linker_object) " +
         // libs
         "  -f $(location :libc_musl) " +
